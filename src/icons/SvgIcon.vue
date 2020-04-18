@@ -19,25 +19,16 @@ export default {
             default: ''
         }
     },
-    setup(props){
-        const msg = ref("手把手撸码的说法的前端");
-        const number = ref(1);
-
-        // 计算属性，得出最终结果，并返回
-        const iconName = computed(() => `#icon-${props.iconClass}`)
-
-        const svgClass = computed(() => {
-            if(props.className) {
-                return `svg-icon ${props.className}`
+    computed: {
+        iconName(){
+            return `#icon-${this.iconClass}`   
+        },
+        svgClass(){
+            if(this.className) {
+                return `svg-icon ${this.className}`
             }else{
                 return `svg-icon`
             }
-        })
-
-        return {
-            msg,
-            iconName,
-            svgClass
         }
     }
 }

@@ -4,7 +4,7 @@
         <div class="pull-right">
             <div class="user-info pull-left">
                 <img src="../../../assets/images/face.jpg" alt="">
-                {{ username }}
+                {{ aaa }}
             </div>
             <div class="header-icon pull-left" @click="logout">
                 <svg-icon iconClass="exit" className="exit" />
@@ -14,31 +14,35 @@
 </template>
 <script>
 import { computed } from '@vue/composition-api'
+import { mapState } from 'vuex';
 export default {
     name: 'layoutHeader',
-    setup(props, { root }){
-        const username = computed(() => root.$store.state.app.username);
-        const navMenuState = () => {
-            root.$store.commit('app/SET_COLLAPSE')
-        }
-        // 退出
-        const logout = () => {
-            root.$store.dispatch('app/logout').then(response => {
+    computed: {
+        // 命名空间
+        // ...mapState('app', ['username']),  
+        // 非命名空间
+        // ...mapState(['username']),  
+        // 重命名
+        ...mapState('app', {
+            'aaa': 'username'
+        })
+    },
+    methods: {
+        navMenuState(){
+            this.$store.commit('app/SET_COLLAPSE');
+        },
+        logout(){
+            this.$store.dispatch('app/logout').then(response => {
                 if(response.resCode === 0) {
-                    root.$message({
+                    this.$message({
                         message: "退出成功！",
                         type: "success"
                     })
-                    root.$router.push({
+                    this.$router.push({
                         name: 'Login'
                     })
                 }
             })
-        }
-        return {
-            navMenuState,
-            username,
-            logout
         }
     }
 }

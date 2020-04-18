@@ -29,31 +29,21 @@
     </div>
 </template>
 <script>
-import { reactive, computed } from '@vue/composition-api';
+import { mapGetters } from 'vuex';
 export default {
   // compiler
     name: 'navMenu',
-    setup(props, { root }){
-      /**
-       * data 数据
-       */
-      const routers = reactive(root.$router.options.routes);
-      /**
-       * 监听路由变化
-       */
-      const defalutActive = computed(() => {
-        const route = root.$route;
+    data(){
+      return {
+        routers: this.$router.options.routes
+      }
+    },
+    computed: {
+      ...mapGetters('app', ['isCollapse']),
+      defalutActive(){
+        const route = this.$route;
         const { path } = route;
         return path;
-      })
-      /**
-       * computed 监听
-       */
-      const isCollapse = computed(() => root.$store.state.app.isCollapse);
-      return {
-        isCollapse,
-        routers,
-        defalutActive
       }
     }
 }
