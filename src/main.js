@@ -8,12 +8,15 @@ import "element-ui/lib/theme-chalk/index.css";
 import "./router/premit";
 // 自定义全局组件
 import "./icons";
+// 全局方法
+import global from './utils/global';
 // 全局方法引入按钮权限
 import { buttonPermission } from "./utils/buttonPermission";
 // 自定义指令按钮权限
 import "./utils/buttonPerm";
 Vue.prototype.btnPerm = buttonPermission;
 Vue.use(ElementUI);
+Vue.use(global);
 Vue.use(VueCompositionApi);
 
 Vue.config.productionTip = false;

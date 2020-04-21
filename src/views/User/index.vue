@@ -7,10 +7,10 @@
                     <div class="warp-content">
                         <el-row :gutter="16">
                             <el-col :span="3">
-                                <SelectVue :config="data.configOption" :selectData.sync="data.selectData" />
+                                <SelectVue :config="configOption" :selectData.sync="selectData" />
                             </el-col>
                             <el-col :span="5">
-                                <el-input v-model="data.key_word" placeholder="请输入搜索的关键字"></el-input>
+                                <el-input v-model="key_word" placeholder="请输入搜索的关键字"></el-input>
                             </el-col>
                             <el-col :span="15">
                                 <el-button type="danger" @click="search">搜索</el-button>
@@ -24,7 +24,7 @@
             </el-col>
         </el-row>
         <div class="black-space-30"></div>
-        <TableVue ref="userTable" :config="data.configTable" :tableRow.sync="data.tableRow">
+        <TableVue ref="userTable" :config="configTable" :tableRow.sync="tableRow">
             <!--插槽-->
             <template v-slot:status="slotData">
                 <el-switch @change="handlerSwitch(slotData.data)" v-model="slotData.data.status" active-value="2"  inactive-value="1" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
@@ -39,7 +39,7 @@
             <!--插槽-->
         </TableVue>
         <!--子组件-->
-        <DialogAdd :flag.sync="data.dialog_add" :editData="data.editData" @refreshTabelData="refreshData" />
+        <DialogAdd :flag.sync="dialog_add" :editData="editData" @componentCallback="componentCallbackFun" />
     </div>
 </template>
 <script>
@@ -54,11 +54,9 @@ import { global } from "@/utils/global_V3.0";
 export default {
     name: 'userIndex',
     components: { SelectVue, TableVue, DialogAdd },
-    setup(props, { root, refs }) {
-        const { confirm } = global();
-        const userTable = ref(null);
-        const data = reactive({
-            // table选择的数据
+    data(){
+        return {
+            userTable: null,
             tableRow: {},
             cityPickerData: {},
             dialog_add: false,
@@ -120,99 +118,96 @@ export default {
                     }
                 }
             }
-        });
-
-        const search = () => {
-            console.log(data.selectData.value)
-            let requesttData = {
-                [data.selectData.value] : data.key_word
-            }
-            refs.userTable.paramsLoadData(requesttData);
         }
-
-        const handlerBatchDel = () => {
-            let userId = data.tableRow.idItem
+    },
+    methods: {
+        componentCallbackFun(params){ params.function && this[params.function](params.data); },
+        /**
+         * 搜索
+         */
+        search(){
+            let requesttData = {
+                [this.selectData.value] : this.key_word
+            }
+            this.$refs.userTable.paramsLoadData(requesttData);
+        },
+        /**
+         * 批量删除
+         */
+        handlerBatchDel(){
+            let userId = this.tableRow.idItem
             if(!userId || userId.length === 0) {
-                root.$message({
+                this.$message({
                     message: "请勾选需要删除的用户！！",
                     type: "error"
                 })
                 return false;
             }
-            confirm({
+            this.confirm({
                 content: "确认删除当前信息，确认后将无法恢复！！",
                 tip: "警告",
-                fn: userDelete
+                fn: this.userDelete
             })
-            
-        }
-        // 删除用户
-        const userDelete = () => {
-            UserDel({ id: data.tableRow.idItem }).then(response => {
+        },
+        /**
+         * 删除用户
+         */
+        userDelete(){
+            UserDel({ id: this.tableRow.idItem }).then(response => {
                 // 其中一种写法
                 // refs.userTable.refreshData()
                 // 第二种写法
-                refreshData()
+                this.refreshData()
             })
-        }
-
-        const refreshData = () => {
-            userTable.value.refreshData()
-        }
-
+        },
         /**
-         * methods
+         * 刷新data
          */
-        const handlerDel = (params) => {
-            data.tableRow.idItem = [params.id]
-            confirm({
+        refreshData(){
+            this.$refs.userTable.refreshData();
+        },
+        /**
+         * 单条数据删除
+         */
+        handlerDel(params){
+            this.tableRow.idItem = [params.id];
+            this.confirm({
                 content: "确认删除当前信息，确认后将无法恢复！！",
                 tip: "警告",
-                fn: userDelete
+                fn: this.userDelete
             })
-        }
-
+        },
         /**
          * 添加用户
          */
-        const handlerAdd = () => {
-            data.dialog_add = true;
+        handlerAdd(){
+            this.dialog_add = true;
             // 子组件赋值
-            data.editData = Object.assign({});
-        }
-
+            this.editData = Object.assign({});
+        },
         /**
          * 编辑
          */
-        const handlerEdit = (params) => {
-            data.dialog_add = true;
+        handlerEdit(params){
+            this.dialog_add = true;
             // 子组件赋值
-            data.editData = Object.assign({}, params);
-        }
-
+            this.editData = Object.assign({}, params);
+        },
         /**
          * 修改用户状态
          */
-        const handlerSwitch = (params) => {
-            if(data.updateUserStatusFlag) { return false }
-            data.updateUserStatusFlag = true
+        handlerSwitch(params){
+            if(this.updateUserStatusFlag) { return false }
+            this.updateUserStatusFlag = true
             UserActives({ id: params.id, status: params.status }).then(response => {
-                root.$message({
+                this.$message({
                     message: response.data.message,
                     type: "success"
                 })
-                data.updateUserStatusFlag = !data.updateUserStatusFlag
+                this.updateUserStatusFlag = !this.updateUserStatusFlag
             }).catch(error => {
-                data.updateUserStatusFlag = !data.updateUserStatusFlag
+                this.updateUserStatusFlag = !this.updateUserStatusFlag
             })
-        }
-
-        onMounted(() => {})
-
-        return {
-            data,
-            handlerDel,
-            handlerBatchDel, userTable, refreshData, handlerSwitch, handlerEdit, handlerAdd, search
         }
     }
 }
